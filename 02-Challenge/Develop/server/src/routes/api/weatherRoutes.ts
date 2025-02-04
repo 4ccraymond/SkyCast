@@ -5,29 +5,33 @@ import HistoryService from '../../service/historyService.js';
 import WeatherService from '../../service/weatherService.js';
 
 // TODO: POST Request with city name to retrieve weather data
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   // TODO: GET weather data from city name
   try {
-    const { city } = req.body;
+    console.log(req.body);
+    const { cityName } = req.body;
 
-    if (!city) {
+    if (!cityName) {
       return res.status(400).json({ message: 'City is required' });
     }
-    // TODO: save city to search history
-    await HistoryService.save(city);
 
-    res.status (200).json(weatherData);
+    const weatherData = await WeatherService.getWeatherForCity(cityName);
+
+    // TODO: save city to search history
+    await HistoryService.addCity(cityName);
+
+    return res.status(200).json(weatherData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Sorry! Failed to fetch weather!' });
-
+    return res.status(500).json({ error: 'Sorry! Failed to fetch weather!' });
+  }
   
 });
 
 // TODO: GET search history
-router.get('/history', async (req: Request, res: Response) => {
+router.get('/history', async (_req: Request, res: Response) => {
   try {
-    const history = await HistoryService.get();
+    const history = await HistoryService.getCities();
     res.status(200).json(history);
   } catch (error) {
     console.error(error);
@@ -39,11 +43,16 @@ router.get('/history', async (req: Request, res: Response) => {
 router.delete('/history/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    await HistoryService.delete(id);
-    res.status(200).json({ message: 'City deleted from history' });
+    const deleted = await HistoryService.removeCity(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'City not found' });
+    }
+
+    return res.status(200).json({ message: 'City deleted from history' });
+    
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Sorry! Failed to delete city!' });
+    return res.status(500).json({ error: 'Sorry! Failed to delete city!' });
   }
 });
 

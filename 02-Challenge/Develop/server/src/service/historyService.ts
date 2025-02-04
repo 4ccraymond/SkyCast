@@ -19,7 +19,7 @@ class HistoryService {
   private filePath: string;
 
   constructor() {
-    this.filePath = './src/data/searchHistory.json';
+    this.filePath = './db/db.json';
   }
 // TODO: Define a read method that reads from the searchHistory.json file
 private async read(): Promise<City[]> {
@@ -35,12 +35,7 @@ private async read(): Promise<City[]> {
   // TODO: Define a write method that writes the updated cities array to the searchHistory.json file
   private async write(cities: City[]): Promise<void> {
     try {
-      await new Promise<void>((resolve, reject) => {
-        fs.writeFile(this.filePath, JSON.stringify(cities, null, 2), (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
+      await fs.writeFile(this.filePath, JSON.stringify(cities, null, 2));
     } catch (error) {
       console.error(error);
       throw new Error('Failed to write search history');
@@ -72,7 +67,7 @@ private async read(): Promise<City[]> {
       return false;
     }
 
-    await this.write(cities);
+    await this.write(updatedCities);
 
     return true;
   }

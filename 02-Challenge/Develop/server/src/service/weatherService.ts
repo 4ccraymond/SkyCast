@@ -8,44 +8,49 @@ interface Coordinates {
 }
 
 // TODO: Define a class for the Weather object
-
 class Weather {
   city: string;
-  description: string;
-  temperature: number;
+  date: string;
+  icon: string;
+  iconDescription: string;
+  tempF: number;
   humidity: number;
   windSpeed: number;
   forecast: Array<{
     date: string, 
-    description: string, 
-    temperature: number, 
+    iconDescription: string, 
+    tempF: number, 
     humidity: number, 
     windSpeed: number
   }>;
 
   constructor(
     city: string,
-    description: string, 
-    temperature: number, 
+    date: string,
+    icon: string,
+    iconDescription: string, 
+    tempF: number, 
     humidity: number, 
     windSpeed: number, 
     forecast: Array<{
       date: string, 
-      description: string, 
-      temperature: number, 
+      iconDescription: string, 
+      tempF: number, 
       humidity: number, 
       windSpeed: number}>
     ) {
     this.city = city;
-    this.description = description;
-    this.temperature = temperature;
+    this.date = date;
+    this.icon = icon;
+    this.iconDescription = iconDescription;
+    this.tempF = tempF;
     this.humidity = humidity;
     this.windSpeed = windSpeed;
     this.forecast = forecast;
   }
 }
 
-  // TODO: Complete the WeatherService class
+// TODO: Complete the WeatherService class
 class WeatherService {
   // TODO: Define the baseURL, API key, and city name properties
   private baseURL: string;
@@ -99,45 +104,48 @@ class WeatherService {
   }
 
   // TODO: Build parseCurrentWeather method
-  private parseCurrentWeather(response: any): Weather {
-    const currentWeather = response.list[0];
-    const forecast = response.list.slice(1, 6).map((day: any) => ({
+  private parseCurrentWeather(response: any): any[] {
+    const day = response.list[0];
+    const currentWeather = {
       date: day.dt_txt,
-      description: day.weather[0].description,
-      temperature: day.main.temp,
+      iconDescription: day.weather[0].description,
+      tempF: day.main.temp,
       humidity: day.main.humidity,
       windSpeed: day.wind.speed,
+      icon: day.weather[0].icon
+    };
+
+    const forecast = response.list.filter((day: any) => day.dt_txt.includes('12:00:00')).map((day: any) => ({
+      date: day.dt_txt,
+      iconDescription: day.weather[0].iconDescription,
+      tempF: day.main.temp,
+      humidity: day.main.humidity,
+      windSpeed: day.wind.speed,
+      icon: day.weather[0].icon
     }));
 
-    return new Weather(
-      this.cityName,
-      currentWeather.weather[0].description,
-      currentWeather.main.temp,
-      currentWeather.main.humidity,
-      currentWeather.wind.speed,
-      forecast
-    );
+    return [currentWeather, ...forecast];
   }
 
   // TODO: Complete buildForecastArray method
   private buildForecastArray(currentWeather: Weather, weatherData: any[]): Array<{
     date: string, 
-    description: string, 
-    temperature: number, 
+    iconDescription: string, 
+    tempF: number, 
     humidity: number, 
     windSpeed: number
   }> {
     return weatherData.slice(1, 6).map((day: any) => ({
       date: day.dt_txt,
-      description: day.weather[0].description,
-      temperature: day.main.temp,
+      iconDescription: day.weather[0].iconDescription,
+      tempF: day.main.temp,
       humidity: day.main.humidity,
       windSpeed: day.wind.speed
     }));
   }
 
   // TODO: Complete getWeatherForCity method
-  async getWeatherForCity(city: string): Promise<Weather> {
+  async getWeatherForCity(city: string): Promise<Weather[]> {
     try {
       this.cityName = city;
 
@@ -145,7 +153,10 @@ class WeatherService {
       const coordinates = this.destructureLocationData(locationData);
       const weatherResponse = await this.fetchWeatherData(coordinates);
 
-      return this.parseCurrentWeather(weatherResponse);
+      const forecast = this.parseCurrentWeather(weatherResponse);
+      forecast[0].city = city;
+      return forecast;
+
     } catch (error) {
       console.error(error);
       throw new Error(`Failed to fetch weather for ${city}`);
