@@ -15,28 +15,6 @@ This project is a **Weather Dashboard** application that allows users to search 
   - Serve the front-end application from a static folder.
   - Use wildcard routes to enable client-side routing.
 
-## File Structure
-
-```
-weatherAPI/
-├── src/
-│   ├── server.ts
-│   ├── routes/
-│   │   ├── index.ts
-│   │   ├── htmlRoutes.ts
-│   │   └── weatherRoutes.ts
-│   ├── services/
-│   │   ├── weatherService.ts
-│   │   └── historyService.ts
-│   └── data/
-│       └── searchHistory.json
-├── client/
-│   └── dist/
-├── .env
-├── package.json
-└── tsconfig.json
-```
-
 ## Future Enhancements
 
 - Add user authentication to save personalized search histories.
